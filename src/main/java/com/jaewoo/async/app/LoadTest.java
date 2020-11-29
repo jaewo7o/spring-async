@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class LoadTest {
+    private static AtomicInteger counter = new AtomicInteger(0);
+
     public static void main(String[] args) throws InterruptedException {
         ExecutorService es = Executors.newFixedThreadPool(100);
 
@@ -20,14 +22,14 @@ public class LoadTest {
         StopWatch main = new StopWatch();
         main.start();
 
-        AtomicInteger counter = new AtomicInteger(0);
         for (int i=0; i<100; i++) {
             es.execute(() -> {
                 int idx = counter.addAndGet(1);
-                log.info("Thread " + idx);
+                log.info("Thread {} ", idx);
 
                 StopWatch sw = new StopWatch();
                 sw.start();
+
                 rt.getForObject(url, String.class);
 
                 sw.stop();
@@ -35,8 +37,8 @@ public class LoadTest {
             });
         }
 
-        es.shutdown();
         es.awaitTermination(100, TimeUnit.SECONDS);
+        es.shutdown();
         main.stop();
 
         log.info("Total Elapsed: {}", main.getTotalTimeSeconds());
